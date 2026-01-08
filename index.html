@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orion Flip</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="favicon.ico"> <!-- Add your own icon -->
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="clock-container">
+        <div class="flip-group" id="hours-tens"></div>
+        <div class="flip-group" id="hours-ones"></div>
+        <span class="colon">:</span>
+        <div class="flip-group" id="minutes-tens"></div>
+        <div class="flip-group" id="minutes-ones"></div>
+        <span class="colon">:</span>
+        <div class="flip-group" id="seconds-tens"></div>
+        <div class="flip-group" id="seconds-ones"></div>
+    </div>
+    <div id="date-display"></div>
+    <div id="controls">
+        <select id="mode-select">
+            <option value="clock">Clock</option>
+            <option value="timer">Timer</option>
+            <option value="stopwatch">Stopwatch</option>
+            <option value="alarm">Alarm</option>
+        </select>
+        <button id="fullscreen-btn">Fullscreen</button>
+        <select id="theme-select">
+            <option value="classic">Classic</option>
+            <option value="sepia">Sepia</option>
+            <option value="neon">Neon</option>
+        </select>
+        <select id="timezone-select"></select>
+        <input type="checkbox" id="sound-toggle"> Sounds
+        <div id="timer-input" style="display:none;">
+            <input type="number" id="timer-min" placeholder="Min" min="0">
+            <input type="number" id="timer-sec" placeholder="Sec" min="0" max="59">
+            <button id="start-timer">Start</button>
+            <button id="pomodoro">Pomodoro (25:00)</button>
+        </div>
+        <div id="stopwatch-controls" style="display:none;">
+            <button id="start-stopwatch">Start</button>
+            <button id="lap">Lap</button>
+            <button id="reset-stopwatch">Reset</button>
+            <ul id="laps"></ul>
+        </div>
+        <div id="alarm-controls" style="display:none;">
+            <input type="time" id="alarm-time">
+            <button id="set-alarm">Set Alarm</button>
+            <ul id="alarms"></ul>
+        </div>
+    </div>
+    <audio id="flip-sound" src="sounds/flip.wav"></audio>
+    <audio id="alarm-sound" src="sounds/alarm.mp3" loop></audio>
+    <script src="script.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+    </script>
+</body>
+</html>
