@@ -1,72 +1,187 @@
-/* ... Keep your body, starry background, etc. ... */
+/* ==========================================================================
+   RETRO CRT + 1990s VINTAGE FLIP CLOCK
+   ========================================================================== */
 
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'VT323', monospace;
+  background: #0a0a0a;
+  color: #ff9900;          /* amber-orange classic */
+  min-height: 100vh;
+  overflow: hidden;
+  image-rendering: pixelated; /* helps with crisp font */
+  position: relative;
+}
+
+body.green-phosphor  { color: #00ff41; background: #000d00; }
+body.classic         { color: #e0e0e0; background: #111; }
+body.neon            { color: #00ffff; text-shadow: 0 0 10px #00ffff; background: #000; }
+
+/* CRT effects */
+.crt .scanlines {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    rgba(0,0,0,0.08) 1px,
+    transparent 2px
+  );
+  background-size: 100% 4px;
+  z-index: 9999;
+  opacity: 0.6;
+  mix-blend-mode: multiply;
+}
+
+.crt .vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at center, transparent 40%, rgba(0,0,0,0.8) 100%);
+  z-index: 9998;
+}
+
+/* Terminal style header */
+.terminal-header {
+  background: #111;
+  color: #00ff41;
+  padding: 6px 12px;
+  font-size: 1.4rem;
+  border-bottom: 2px solid #333;
+  text-align: center;
+  letter-spacing: 1px;
+  text-shadow: 0 0 4px #00ff41;
+  margin-bottom: 10px;
+}
+
+/* Clock */
 #clock-container {
-    perspective: 2000px; /* Deeper 3D space - critical fix */
-    transform-style: preserve-3d;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  font-size: 6.5rem;
+  margin: 40px 0 20px;
+  text-shadow: 0 0 16px currentColor;
+  filter: drop-shadow(0 0 12px currentColor);
 }
 
+.colon {
+  font-size: 5rem;
+  animation: blink 1s steps(2) infinite;
+  color: inherit;
+}
+
+@keyframes blink {
+  50% { opacity: 0.2; }
+}
+
+/* Flip card styling — keep yours, just tune colors */
 .flip-group {
-    position: relative;
-    width: 1em;
-    height: 1.5em;
-    margin: 0 0.05em;
-    overflow: hidden; /* Clip overflowing parts */
-    border-radius: 0.1em;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.8);
-    background: #111; /* Card frame */
-    transform-style: preserve-3d;
+  width: 80px;
+  height: 110px;
+  perspective: 300px;
+  position: relative;
 }
 
-.flip-card {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    backface-visibility: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1em;
-    background: linear-gradient(to bottom, #fff 0%, #eee 100%);
-    color: #000;
-    box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
+.flip-group::before,
+.flip-group::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, #1a1a1a, #000);
+  border: 2px solid #444;
+  border-radius: 6px;
+  box-shadow: inset 0 0 12px rgba(0,0,0,0.9), 0 0 20px currentColor;
 }
 
-.flip-card.top {
-    top: 0;
-    height: 50%;
-    border-bottom: 1px solid #999;
-    transform-origin: bottom;
+/* Date */
+#date-display {
+  text-align: center;
+  font-size: 2.4rem;
+  margin: 10px 0 30px;
+  letter-spacing: 2px;
+  opacity: 0.9;
 }
 
-.flip-card.bottom {
-    bottom: 0;
-    height: 50%;
-    border-top: 1px solid #999;
-    transform-origin: top;
-    transform: rotateX(180deg);
+/* Controls — old DOS / Amiga style */
+.retro-controls {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 20px;
+  background: rgba(20,20,20,0.6);
+  border: 2px outset #555;
+  border-radius: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
 }
 
-.flip-group.flipping .flip-card.top {
-    animation: flipTop 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+.retro-controls select,
+.retro-controls button,
+.retro-controls input[type="number"],
+.retro-controls input[type="time"],
+.retro-controls input[type="checkbox"] + span {
+  font-family: 'VT323', monospace;
+  font-size: 1.5rem;
+  padding: 6px 12px;
+  background: #000;
+  color: inherit;
+  border: 2px inset #444;
+  border-radius: 0;
 }
 
-.flip-group.flipping .flip-card.bottom {
-    animation: flipBottom 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+.retro-controls button {
+  background: #222;
+  border: 3px outset #555;
+  cursor: pointer;
 }
 
-@keyframes flipTop {
-    0% { transform: rotateX(0deg); }
-    50% { transform: rotateX(-90deg); }
-    100% { transform: rotateX(-180deg); }
+.retro-controls button:active {
+  border-style: inset;
+  transform: translate(1px,1px);
 }
 
-@keyframes flipBottom {
-    0% { transform: rotateX(180deg); }
-    50% { transform: rotateX(90deg); }
-    100% { transform: rotateX(0deg); }
+.mode-panel {
+  display: none;
+  width: 100%;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed #444;
 }
 
-/* Hover glow remains */
-.flip-group:hover { transform: scale(1.05); box-shadow: 0 0 20px #0ff; }
+/* Stars & shooting star — keep but dim */
+.stars {
+  position: fixed;
+  inset: 0;
+  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><circle cx="10" cy="10" r="1" fill="white"/><circle cx="50" cy="30" r="1" fill="white"/><circle cx="80" cy="70" r="1" fill="white"/></svg>') repeat;
+  opacity: 0.12;
+  pointer-events: none;
+}
 
-/* Rest of your themes, stars, etc. */
+.shooting-star {
+  position: absolute;
+  width: 4px;
+  height: 60px;
+  background: linear-gradient(to bottom, transparent, white, transparent);
+  opacity: 0;
+  transform: rotate(30deg);
+  animation: shoot 8s infinite;
+}
+
+@keyframes shoot {
+  0%   { top: -10%; left: -10%; opacity: 0; }
+  10%  { opacity: 0.8; }
+  30%  { opacity: 0; }
+  100% { top: 110%; left: 110%; }
+}
