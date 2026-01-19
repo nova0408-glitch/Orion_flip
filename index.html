@@ -1,90 +1,152 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ORION FLIP CLOCK - 1992</title>
-  <link rel="stylesheet" href="styles.css">
-  <link rel="manifest" href="manifest.json">
-  <link rel="icon" href="favicon.ico">
-  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<title>Modern Circular Clock</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+body {
+  height: 100vh;
+  background: radial-gradient(circle at center, #111 0%, #000 70%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+}
+
+.clock {
+  position: relative;
+  width: 340px;
+  height: 340px;
+}
+
+.ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: transform 0.4s linear;
+}
+
+.ring::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  transform: translateX(-50%);
+}
+
+.hours {
+  border: 5px solid rgba(255,255,255,0.15);
+}
+.hours::before { background: #fff; }
+
+.minutes {
+  inset: 20px;
+  border: 5px solid rgba(0,170,255,0.6);
+  box-shadow: 0 0 20px rgba(0,170,255,0.4);
+}
+.minutes::before { background: #00aaff; }
+
+.seconds {
+  inset: 40px;
+  border: 5px solid rgba(255,80,80,0.7);
+  box-shadow: 0 0 25px rgba(255,80,80,0.6);
+}
+.seconds::before { background: #ff5050; }
+
+.date {
+  inset: 60px;
+  border: 3px dashed rgba(255,255,255,0.25);
+}
+
+.center {
+  position: absolute;
+  inset: 95px;
+  background: rgba(0,0,0,0.85);
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  letter-spacing: 2px;
+}
+
+.time {
+  font-size: 1.6rem;
+  font-weight: 600;
+}
+
+.day {
+  font-size: 0.9rem;
+  opacity: 0.7;
+  margin-top: 6px;
+}
+</style>
 </head>
-<body class="crt">
 
-  <div class="scanlines"></div>
-  <div class="vignette"></div>
+<body>
 
-  <div class="stars"></div>
-  <div id="shooting-star" class="shooting-star"></div>
+<div class="clock">
+  <div class="ring hours"></div>
+  <div class="ring minutes"></div>
+  <div class="ring seconds"></div>
+  <div class="ring date"></div>
 
-  <header class="terminal-header">
-    ORION FLIP CLOCK v1.9 ── DAR ES SALAAM  ── 15 JAN 2026
-  </header>
+  <div class="center">
+    <div class="time" id="digitalTime">00:00:00</div>
+    <div class="day" id="dayText">MON · JAN 01</div>
+  </div>
+</div>
 
-  <main>
-    <div id="clock-container">
-      <div class="flip-group" id="hours-tens"></div>
-      <div class="flip-group" id="hours-ones"></div>
-      <span class="colon">:</span>
-      <div class="flip-group" id="minutes-tens"></div>
-      <div class="flip-group" id="minutes-ones"></div>
-      <span class="colon">:</span>
-      <div class="flip-group" id="seconds-tens"></div>
-      <div class="flip-group" id="seconds-ones"></div>
-    </div>
+<script>
+function updateClock() {
+  const now = new Date();
 
-    <div id="date-display" class="date-crt"></div>
+  const h = now.getHours();
+  const m = now.getMinutes();
+  const s = now.getSeconds();
+  const d = now.getDate();
 
-    <div id="controls" class="retro-controls">
-      <select id="mode-select">
-        <option value="clock">CLOCK</option>
-        <option value="timer">TIMER</option>
-        <option value="stopwatch">STOPWATCH</option>
-        <option value="alarm">ALARM</option>
-      </select>
+  const hourDeg = (h % 12) * 30 + m * 0.5;
+  const minDeg  = m * 6;
+  const secDeg  = s * 6;
+  const dateDeg = d * 12;
 
-      <button id="zen-mode">ZEN</button>
-      <button id="fullscreen-btn">FULL SCREEN</button>
+  document.querySelector(".hours").style.transform =
+    `rotate(${hourDeg}deg)`;
+  document.querySelector(".minutes").style.transform =
+    `rotate(${minDeg}deg)`;
+  document.querySelector(".seconds").style.transform =
+    `rotate(${secDeg}deg)`;
+  document.querySelector(".date").style.transform =
+    `rotate(${dateDeg}deg)`;
 
-      <select id="theme-select">
-        <option value="amber">AMBER</option>
-        <option value="green">GREEN</option>
-        <option value="classic">CLASSIC</option>
-        <option value="neon">NEON</option>
-      </select>
+  document.getElementById("digitalTime").innerText =
+    `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
 
-      <label><input type="checkbox" id="sound-toggle" checked> BEEP</label>
+  const days = ["SUN","MON","TUE","WED","THU","FRI","SAT"];
+  const months = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
 
-      <div id="timer-input" class="mode-panel">
-        <input type="number" id="timer-min" placeholder="MM" min="0">
-        <input type="number" id="timer-sec" placeholder="SS" min="0" max="59">
-        <button id="start-timer">START</button>
-        <button id="pomodoro">POMODORO</button>
-      </div>
+  document.getElementById("dayText").innerText =
+    `${days[now.getDay()]} · ${months[now.getMonth()]} ${String(d).padStart(2,"0")}`;
+}
 
-      <div id="stopwatch-controls" class="mode-panel">
-        <button id="start-stopwatch">START</button>
-        <button id="lap">LAP</button>
-        <button id="reset-stopwatch">RESET</button>
-        <ul id="laps"></ul>
-      </div>
+setInterval(updateClock, 1000);
+updateClock();
+</script>
 
-      <div id="alarm-controls" class="mode-panel">
-        <input type="time" id="alarm-time">
-        <button id="set-alarm">SET</button>
-        <ul id="alarms"></ul>
-      </div>
-    </div>
-  </main>
-
-  <audio id="flip-sound" src="sounds/flip.wav"></audio>
-  <audio id="alarm-sound" src="sounds/alarm.mp3" loop></audio>
-
-  <script src="script.js"></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js');
-    }
-  </script>
 </body>
 </html>
