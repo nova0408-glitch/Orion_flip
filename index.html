@@ -1,159 +1,336 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Modern Circular Clock</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flip Clock + Quotes</title>
+    <style>
+        html, body {
+            width: 100vw;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background: rgb(18, 18, 18);
+            color: white;
+            font-family: "Segoe UI", "Open Sans", "Helvetica Neue", sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
 
-<style>
-* {
-  *{margin:0;padding:0;box-sizing:border-box}
-body{overflow:hidden;font-family:'Orbitron',sans-serif;background:radial-gradient(circle at center, #001a33, #000);
-    animation:bgcalm 20s infinite alternate;
-    color:#a0ffff} /* calmer navy with soft cyan text */
-  @keyframes bgcalm{0%{background:radial-gradient(circle at center,#001a33,#000);}100%{background:radial-gradient(circle at center,#002244,#000);}}
-canvas{display:block}
+        .flip-clock-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 7vw;
+            line-height: 0;
+            margin-bottom: 40px;
+        }
 
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  font-family: "Segoe UI", system-ui, sans-serif;
-}
+        .flip-clock {
+            display: flex;
+            margin: 0 8px;
+            perspective: 1000px;
+        }
 
-body {
-  height: 100vh;
-  background: radial-gradient(circle at center, #111 0%, #000 70%);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: white;
-}
+        .digit {
+            position: relative;
+            width: 9vw;
+            height: 11vw;
+            box-shadow: 0 0 2px 1px rgba(0, 0, 0, 0.1);
+        }
 
-.clock {
-  position: relative;
-  width: 340px;
-  height: 340px;
-}
+        .digit-left { margin-right: 2px; }
+        .digit-right { margin-left: 2px; }
 
-.ring {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: transform 0.4s linear;
-}
+        .digit::before,
+        .digit::after {
+            position: absolute;
+            z-index: 0;
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            height: 50%;
+            overflow: hidden;
+        }
 
-.ring::before {
-  content: "";
-  position: absolute;
-  top: -6px;
-  left: 50%;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  transform: translateX(-50%);
-}
+        .digit::before {
+            content: attr(data-digit-before);
+            bottom: 0;
+            align-items: flex-start;
+        }
 
-.hours {
-  border: 5px solid rgba(255,255,255,0.15);
-}
-.hours::before { background: #fff; }
+        .digit::after {
+            content: attr(data-digit-after);
+            top: 0;
+            align-items: flex-end;
+        }
 
-.minutes {
-  inset: 20px;
-  border: 5px solid rgba(0,170,255,0.6);
-  box-shadow: 0 0 20px rgba(0,170,255,0.4);
-}
-.minutes::before { background: #00aaff; }
+        .card {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            height: 50%;
+            transform-style: preserve-3d;
+            transform-origin: bottom;
+            transform: rotateX(0);
+            transition: transform 0.7s ease-in-out;
+        }
 
-.seconds {
-  inset: 40px;
-  border: 5px solid rgba(255,80,80,0.7);
-  box-shadow: 0 0 25px rgba(255,80,80,0.6);
-}
-.seconds::before { background: #ff5050; }
+        .card.flipped {
+            transform: rotateX(-180deg);
+        }
 
-.date {
-  inset: 60px;
-  border: 3px dashed rgba(255,255,255,0.25);
-}
+        .card-face {
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            backface-visibility: hidden;
+        }
 
-.center {
-  position: absolute;
-  inset: 95px;
-  background: rgba(0,0,0,0.85);
-  border-radius: 50%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  letter-spacing: 2px;
-}
+        .card-face-front { align-items: flex-end; }
+        .card-face-back { align-items: flex-start; transform: rotateX(-180deg); }
 
-.time {
-  font-size: 1.6rem;
-  font-weight: 600;
-}
+        .digit::before, .digit::after,
+        .card-face-front, .card-face-back {
+            background: rgb(16, 16, 16);
+            color: rgb(255, 255, 255);
+        }
 
-.day {
-  font-size: 0.9rem;
-  opacity: 0.7;
-  margin-top: 6px;
-}
-</style>
+        .digit, .digit::before, .digit::after,
+        .card, .card-face {
+            border-radius: 6px;
+        }
+
+        .digit::before, .card-face-back {
+            background: #191919;
+            color: #d0d0d0;
+            border-top: 1px solid #000;
+        }
+
+        .digit::after, .card-face-front {
+            background: #191919;
+            color: #d0d0d0;
+            border-bottom: 1px solid #000;
+        }
+
+        /* Quote Section */
+        .quote-container {
+            max-width: 700px;
+            text-align: center;
+            padding: 20px 30px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .quote-text {
+            font-size: 1.35rem;
+            font-style: italic;
+            margin-bottom: 12px;
+            opacity: 0;
+            transition: opacity 1.2s ease;
+        }
+
+        .quote-text.show {
+            opacity: 1;
+        }
+
+        .quote-author {
+            font-size: 1.1rem;
+            color: #aaa;
+            opacity: 0;
+            transition: opacity 1.2s ease;
+        }
+
+        .quote-author.show {
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .flip-clock-container {
+                flex-direction: column;
+                font-size: 16vw;
+            }
+            .digit { width: 26vw; height: 32vw; }
+            .flip-clock { margin: 4px 0; }
+            .quote-text { font-size: 1.1rem; }
+        }
+    </style>
 </head>
-
 <body>
+    <div class="flip-clock-container">
+        <!-- Hours -->
+        <div class="flip-clock flip-clock-h">
+            <div class="digit digit-left"><div class="card"><div class="card-face card-face-front"></div><div class="card-face card-face-back"></div></div></div>
+            <div class="digit digit-right"><div class="card"><div class="card-face card-face-front"></div><div class="card-face card-face-back"></div></div></div>
+        </div>
 
-<div class="clock">
-  <div class="ring hours"></div>
-  <div class="ring minutes"></div>
-  <div class="ring seconds"></div>
-  <div class="ring date"></div>
+        <!-- Minutes -->
+        <div class="flip-clock flip-clock-m">
+            <div class="digit digit-left"><div class="card"><div class="card-face card-face-front"></div><div class="card-face card-face-back"></div></div></div>
+            <div class="digit digit-right"><div class="card"><div class="card-face card-face-front"></div><div class="card-face card-face-back"></div></div></div>
+        </div>
 
-  <div class="center">
-    <div class="time" id="digitalTime">00:00:00</div>
-    <div class="day" id="dayText">MON · JAN 01</div>
-  </div>
-</div>
+        <!-- Seconds -->
+        <div class="flip-clock flip-clock-s">
+            <div class="digit digit-left"><div class="card"><div class="card-face card-face-front"></div><div class="card-face card-face-back"></div></div></div>
+            <div class="digit digit-right"><div class="card"><div class="card-face card-face-front"></div><div class="card-face card-face-back"></div></div></div>
+        </div>
+    </div>
 
-<script>
-function updateClock() {
-  const now = new Date();
+    <div class="quote-container">
+        <div id="quote-text" class="quote-text"></div>
+        <div id="quote-author" class="quote-author"></div>
+    </div>
 
-  const h = now.getHours();
-  const m = now.getMinutes();
-  const s = now.getSeconds();
-  const d = now.getDate();
+    <script>
+        // ==================== FLIP CLOCK ====================
+        (function () {
+            "use strict";
 
-  const hourDeg = (h % 12) * 30 + m * 0.5;
-  const minDeg  = m * 6;
-  const secDeg  = s * 6;
-  const dateDeg = d * 12;
+            const els = {
+                s: initElements("s"),
+                m: initElements("m"),
+                h: initElements("h")
+            };
 
-  document.querySelector(".hours").style.transform =
-    `rotate(${hourDeg}deg)`;
-  document.querySelector(".minutes").style.transform =
-    `rotate(${minDeg}deg)`;
-  document.querySelector(".seconds").style.transform =
-    `rotate(${secDeg}deg)`;
-  document.querySelector(".date").style.transform =
-    `rotate(${dateDeg}deg)`;
+            function initElements(type) {
+                const els = [{}, {}];
+                const target = document.querySelector(`.flip-clock-${type}`);
+                if (!target) return els;
 
-  document.getElementById("digitalTime").innerText =
-    `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+                let el = els[0];
+                el.digit = target.querySelector(".digit-left");
+                el.card = el.digit.querySelector(".card");
+                el.cardFaces = el.card.querySelectorAll(".card-face");
+                el.cardFaceA = el.cardFaces[0];
+                el.cardFaceB = el.cardFaces[1];
 
-  const days = ["SUN","MON","TUE","WED","THU","FRI","SAT"];
-  const months = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+                el = els[1];
+                el.digit = target.querySelector(".digit-right");
+                el.card = el.digit.querySelector(".card");
+                el.cardFaces = el.card.querySelectorAll(".card-face");
+                el.cardFaceA = el.cardFaces[0];
+                el.cardFaceB = el.cardFaces[1];
 
-  document.getElementById("dayText").innerText =
-    `${days[now.getDay()]} · ${months[now.getMonth()]} ${String(d).padStart(2,"0")}`;
-}
+                return els;
+            }
 
-setInterval(updateClock, 1000);
-updateClock();
-</script>
+            function runClock() {
+                const date = new Date();
+                let h = date.getHours();
+                let m = date.getMinutes();
+                let s = date.getSeconds();
 
+                const pad = n => n < 10 ? '0' + n : '' + n;
+
+                const now = {
+                    h: pad(h), m: pad(m), s: pad(s)
+                };
+
+                Object.keys(els).forEach(t => {
+                    for (let i = 0; i < 2; i++) {
+                        const curr = now[t][i];
+                        let next = parseInt(curr) + 1;
+
+                        if (t === 'h') {
+                            if (i === 0) next = next <= 2 ? next : 0;
+                            if (i === 1) next = (now.h[0] === '2' && next > 3) ? 0 : (next > 9 ? 0 : next);
+                        } else {
+                            if (i === 0) next = next <= 5 ? next : 0;
+                            if (i === 1) next = next <= 9 ? next : 0;
+                        }
+
+                        const el = els[t][i];
+                        if (!el.digit) continue;
+
+                        if (!el.digit.dataset.digitBefore) {
+                            el.digit.dataset.digitBefore = curr;
+                            el.cardFaceA.textContent = curr;
+                            el.digit.dataset.digitAfter = next;
+                            el.cardFaceB.textContent = next;
+                        } else if (el.digit.dataset.digitBefore !== curr) {
+                            const card = el.card;
+                            card.addEventListener("transitionend", function handler() {
+                                card.removeEventListener("transitionend", handler);
+                                el.digit.dataset.digitBefore = curr;
+                                el.cardFaceA.textContent = curr;
+
+                                const newCard = card.cloneNode(true);
+                                newCard.classList.remove("flipped");
+                                el.digit.replaceChild(newCard, card);
+                                el.card = newCard;
+                                el.cardFaces = newCard.querySelectorAll(".card-face");
+                                el.cardFaceA = el.cardFaces[0];
+                                el.cardFaceB = el.cardFaces[1];
+
+                                el.digit.dataset.digitAfter = next;
+                                el.cardFaceB.textContent = next;
+                            }, { once: true });
+
+                            if (!card.classList.contains("flipped")) {
+                                card.classList.add("flipped");
+                            }
+                        }
+                    }
+                });
+
+                setTimeout(runClock, 1000);
+            }
+
+            runClock();
+        })();
+
+        // ==================== RANDOM QUOTES ====================
+        const quotes = [
+            { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
+            { text: "Time is the most valuable thing a man can spend.", author: "Theophrastus" },
+            { text: "Every moment is a fresh beginning.", author: "T.S. Eliot" },
+            { text: "The future belongs to those who believe in the beauty of their dreams.", author: "Eleanor Roosevelt" },
+            { text: "Stay hungry, stay foolish.", author: "Steve Jobs" },
+            { text: "Simplicity is the ultimate sophistication.", author: "Leonardo da Vinci" },
+            { text: "Everything you’ve ever wanted is sitting on the other side of fear.", author: "George Addair" },
+            { text: "The best time to plant a tree was 20 years ago. The second best time is now.", author: "Chinese Proverb" },
+            { text: "Do what you feel in your heart to be right, for you’ll be criticized anyway.", author: "Eleanor Roosevelt" },
+            { text: "Life is what happens when you’re busy making other plans.", author: "John Lennon" }
+        ];
+
+        function getRandomQuote() {
+            return quotes[Math.floor(Math.random() * quotes.length)];
+        }
+
+        function showQuote() {
+            const quoteText = document.getElementById("quote-text");
+            const quoteAuthor = document.getElementById("quote-author");
+
+            const q = getRandomQuote();
+
+            // Fade out
+            quoteText.classList.remove("show");
+            quoteAuthor.classList.remove("show");
+
+            setTimeout(() => {
+                quoteText.textContent = `"${q.text}"`;
+                quoteAuthor.textContent = `— ${q.author}`;
+                // Fade in
+                quoteText.classList.add("show");
+                quoteAuthor.classList.add("show");
+            }, 800);
+        }
+
+        // Change quote every 12 seconds
+        showQuote();                    // Show first quote immediately
+        setInterval(showQuote, 12000);
+    </script>
 </body>
 </html>
