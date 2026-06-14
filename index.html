@@ -3,334 +3,510 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flip Clock + Quotes</title>
+    <title>NeonFlip • Premium Clock</title>
     <style>
-        html, body {
-            width: 100vw;
-            height: 100vh;
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            background: rgb(18, 18, 18);
-            color: white;
-            font-family: "Segoe UI", "Open Sans", "Helvetica Neue", sans-serif;
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@400;500;600;700&display=swap');
+
+        :root {
+            --bg: #0a0a0f;
+            --glass: rgba(20, 20, 35, 0.88);
+            --accent: #00f5ff;
+            --accent2: #b400ff;
+            --text: #ffffff;
+            --shadow: 0 25px 50px -12px rgba(0, 245, 255, 0.2);
+        }
+
+        [data-theme="light"] {
+            --bg: #f8fafc;
+            --glass: rgba(255, 255, 255, 0.92);
+            --accent: #2563eb;
+            --accent2: #7c3aed;
+            --text: #0f172a;
+            --shadow: 0 25px 50px -12px rgba(37, 99, 235, 0.15);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .bg-particles {
+            position: absolute;
+            inset: 0;
+            background: 
+                radial-gradient(circle at 25% 25%, rgba(0, 245, 255, 0.12) 0%, transparent 60%),
+                radial-gradient(circle at 75% 75%, rgba(180, 0, 255, 0.1) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+            animation: ambientShift 25s infinite ease-in-out;
+        }
+
+        @keyframes ambientShift {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.05) rotate(2deg); }
+        }
+
+        .clock-container {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            max-width: 960px;
+            padding: 2rem;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            gap: 2.5rem;
         }
 
-        .flip-clock-container {
+        .header {
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
-            font-size: 7vw;
-            line-height: 0;
-            margin-bottom: 40px;
+            width: 100%;
+            max-width: 820px;
         }
 
-        .flip-clock {
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.1rem;
+            font-weight: 700;
+            letter-spacing: 4px;
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(0, 245, 255, 0.5);
+        }
+
+        .controls {
             display: flex;
-            margin: 0 8px;
-            perspective: 1000px;
+            gap: 0.75rem;
+            flex-wrap: wrap;
         }
 
-        .digit {
+        button, select {
+            background: var(--glass);
+            border: 1px solid rgba(255,255,255,0.12);
+            color: var(--text);
+            padding: 0.65rem 1.35rem;
+            border-radius: 9999px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+            backdrop-filter: blur(16px);
+        }
+
+        button:hover, select:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow);
+        }
+
+        .clock {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: var(--glass);
+            padding: 2.25rem 3.5rem;
+            border-radius: 36px;
+            box-shadow: var(--shadow), inset 0 2px 0 rgba(255,255,255,0.08);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .time-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .digit-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .flip-digit {
             position: relative;
-            width: 9vw;
-            height: 11vw;
-            box-shadow: 0 0 2px 1px rgba(0, 0, 0, 0.1);
+            width: 82px;
+            height: 118px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 4.8rem;
+            font-weight: 700;
+            color: var(--text);
+            perspective: 700px;
+            user-select: none;
         }
 
-        .digit-left { margin-right: 2px; }
-        .digit-right { margin-left: 2px; }
-
-        .digit::before,
-        .digit::after {
+        .flip-inner {
             position: absolute;
-            z-index: 0;
-            display: flex;
-            justify-content: center;
-            width: 100%;
-            height: 50%;
-            overflow: hidden;
-        }
-
-        .digit::before {
-            content: attr(data-digit-before);
-            bottom: 0;
-            align-items: flex-start;
-        }
-
-        .digit::after {
-            content: attr(data-digit-after);
-            top: 0;
-            align-items: flex-end;
-        }
-
-        .card {
-            position: relative;
-            z-index: 1;
-            width: 100%;
-            height: 50%;
+            inset: 0;
             transform-style: preserve-3d;
-            transform-origin: bottom;
-            transform: rotateX(0);
-            transition: transform 0.7s ease-in-out;
+            transition: transform 620ms cubic-bezier(0.25, 0.1, 0.25, 1);
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 
+                0 10px 30px -10px rgba(0,0,0,0.5),
+                inset 0 3px 8px rgba(255,255,255,0.15);
         }
 
-        .card.flipped {
+        .flip-upper, .flip-lower {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(145deg, #1e1e2e, #11111f);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .flip-upper {
+            height: 50%;
+            top: 0;
+            border-radius: 14px 14px 0 0;
+            align-items: flex-end;
+            padding-bottom: 6px;
+            box-shadow: inset 0 -6px 12px rgba(0,0,0,0.6);
+        }
+
+        .flip-lower {
+            height: 50%;
+            bottom: 0;
+            border-radius: 0 0 14px 14px;
+            align-items: flex-start;
+            padding-top: 6px;
+            box-shadow: inset 0 6px 12px rgba(0,0,0,0.6);
+        }
+
+        .flip-digit[data-flipping="true"] .flip-inner {
             transform: rotateX(-180deg);
         }
 
-        .card-face {
-            position: absolute;
-            display: flex;
-            justify-content: center;
+        .separator {
+            font-size: 4rem;
+            font-weight: 300;
+            opacity: 0.75;
+            margin-top: 28px;
+            user-select: none;
+            color: var(--accent);
+        }
+
+        .date-display {
+            font-size: 1.45rem;
+            font-weight: 500;
+            letter-spacing: 2px;
+            opacity: 0.9;
+            text-transform: uppercase;
+        }
+
+        .alarm-panel {
             width: 100%;
-            height: 100%;
-            overflow: hidden;
-            backface-visibility: hidden;
+            max-width: 560px;
+            background: var(--glass);
+            border-radius: 28px;
+            padding: 1.8rem;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(20px);
         }
 
-        .card-face-front { align-items: flex-end; }
-        .card-face-back { align-items: flex-start; transform: rotateX(-180deg); }
-
-        .digit::before, .digit::after,
-        .card-face-front, .card-face-back {
-            background: rgb(16, 16, 16);
-            color: rgb(255, 255, 255);
+        .alarm-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
         }
 
-        .digit, .digit::before, .digit::after,
-        .card, .card-face {
-            border-radius: 6px;
-        }
-
-        .digit::before, .card-face-back {
-            background: #191919;
-            color: #d0d0d0;
-            border-top: 1px solid #000;
-        }
-
-        .digit::after, .card-face-front {
-            background: #191919;
-            color: #d0d0d0;
-            border-bottom: 1px solid #000;
-        }
-
-        /* Quote Section */
-        .quote-container {
-            max-width: 700px;
-            text-align: center;
-            padding: 20px 30px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            min-height: 120px;
+        .alarm-list {
+            max-height: 260px;
+            overflow-y: auto;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            gap: 12px;
         }
 
-        .quote-text {
-            font-size: 1.35rem;
-            font-style: italic;
-            margin-bottom: 12px;
-            opacity: 0;
-            transition: opacity 1.2s ease;
+        .alarm-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.25rem;
+            background: rgba(255,255,255,0.06);
+            border-radius: 18px;
+            transition: all 0.2s ease;
         }
 
-        .quote-text.show {
-            opacity: 1;
+        .alarm-item:hover {
+            background: rgba(255,255,255,0.12);
         }
 
-        .quote-author {
-            font-size: 1.1rem;
-            color: #aaa;
-            opacity: 0;
-            transition: opacity 1.2s ease;
-        }
-
-        .quote-author.show {
-            opacity: 1;
-        }
-
+        /* Responsive */
         @media (max-width: 768px) {
-            .flip-clock-container {
-                flex-direction: column;
-                font-size: 16vw;
+            .clock {
+                padding: 1.6rem 2.2rem;
+                gap: 10px;
             }
-            .digit { width: 26vw; height: 32vw; }
-            .flip-clock { margin: 4px 0; }
-            .quote-text { font-size: 1.1rem; }
+            .flip-digit {
+                width: 62px;
+                height: 88px;
+                font-size: 3.4rem;
+            }
+            .separator { font-size: 2.8rem; margin-top: 18px; }
+        }
+
+        .focus-mode .header,
+        .focus-mode .alarm-panel,
+        .focus-mode .controls { 
+            opacity: 0; 
+            pointer-events: none; 
+            transition: opacity 0.6s ease; 
         }
     </style>
 </head>
 <body>
-    <div class="flip-clock-container">
-        <!-- Hours -->
-        <div class="flip-clock flip-clock-h">
-            <div class="digit digit-left"><div class="card"><div class="card-face card-face-front"></div><div class="card-face card-face-back"></div></div></div>
-            <div class="digit digit-right"><div class="card"><div class="card-face card-face-front"></div><div class="card-face card-face-back"></div></div></div>
+    <div class="bg-particles"></div>
+    
+    <div class="clock-container" id="app">
+        <div class="header">
+            <div class="logo">NEONFLIP</div>
+            <div class="controls">
+                <select id="timezone-select"></select>
+                <button id="format-toggle">24H</button>
+                <button id="theme-toggle">🌙</button>
+                <button id="fullscreen-btn">⛶</button>
+                <button id="focus-btn">Focus</button>
+            </div>
         </div>
 
-        <!-- Minutes -->
-        <div class="flip-clock flip-clock-m">
-            <div class="digit digit-left"><div class="card"><div class="card-face card-face-front"></div><div class="card-face card-face-back"></div></div></div>
-            <div class="digit digit-right"><div class="card"><div class="card-face card-face-front"></div><div class="card-face card-face-back"></div></div></div>
+        <div class="clock" id="clock">
+            <div class="time-section">
+                <div class="digit-group" id="hours"></div>
+            </div>
+            <div class="separator">:</div>
+            <div class="time-section">
+                <div class="digit-group" id="minutes"></div>
+            </div>
+            <div class="separator">:</div>
+            <div class="time-section">
+                <div class="digit-group" id="seconds"></div>
+            </div>
         </div>
 
-        <!-- Seconds -->
-        <div class="flip-clock flip-clock-s">
-            <div class="digit digit-left"><div class="card"><div class="card-face card-face-front"></div><div class="card-face card-face-back"></div></div></div>
-            <div class="digit digit-right"><div class="card"><div class="card-face card-face-front"></div><div class="card-face card-face-back"></div></div></div>
+        <div class="date-display" id="date"></div>
+
+        <div class="alarm-panel">
+            <div class="alarm-header">
+                <h3 style="font-size:1.3rem;">Alarms</h3>
+                <button id="add-alarm" style="background:var(--accent); color:#000; font-weight:600;">+ New</button>
+            </div>
+            <div class="alarm-list" id="alarm-list"></div>
         </div>
     </div>
 
-    <div class="quote-container">
-        <div id="quote-text" class="quote-text"></div>
-        <div id="quote-author" class="quote-author"></div>
+    <!-- Alarm Modal -->
+    <div id="alarm-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:100; align-items:center; justify-content:center;">
+        <div style="background:var(--glass); padding:2rem; border-radius:28px; width:340px; box-shadow:var(--shadow);">
+            <h3 style="margin-bottom:1rem;">Set New Alarm</h3>
+            <input type="time" id="alarm-time" style="width:100%; padding:14px; font-size:1.5rem; background:rgba(255,255,255,0.1); border:none; border-radius:16px; color:var(--text);">
+            <div style="margin-top:1.5rem; display:flex; gap:12px;">
+                <button id="cancel-alarm" style="flex:1;">Cancel</button>
+                <button id="save-alarm" style="flex:1; background:var(--accent); color:#000; font-weight:600;">Save Alarm</button>
+            </div>
+        </div>
     </div>
 
     <script>
-        // ==================== FLIP CLOCK ====================
-        (function () {
-            "use strict";
+        let is24Hour = true;
+        let currentTheme = 'dark';
+        let currentTimezone = '';
+        let alarms = [];
+        let isFocusMode = false;
 
-            const els = {
-                s: initElements("s"),
-                m: initElements("m"),
-                h: initElements("h")
-            };
-
-            function initElements(type) {
-                const els = [{}, {}];
-                const target = document.querySelector(`.flip-clock-${type}`);
-                if (!target) return els;
-
-                let el = els[0];
-                el.digit = target.querySelector(".digit-left");
-                el.card = el.digit.querySelector(".card");
-                el.cardFaces = el.card.querySelectorAll(".card-face");
-                el.cardFaceA = el.cardFaces[0];
-                el.cardFaceB = el.cardFaces[1];
-
-                el = els[1];
-                el.digit = target.querySelector(".digit-right");
-                el.card = el.digit.querySelector(".card");
-                el.cardFaces = el.card.querySelectorAll(".card-face");
-                el.cardFaceA = el.cardFaces[0];
-                el.cardFaceB = el.cardFaces[1];
-
-                return els;
-            }
-
-            function runClock() {
-                const date = new Date();
-                let h = date.getHours();
-                let m = date.getMinutes();
-                let s = date.getSeconds();
-
-                const pad = n => n < 10 ? '0' + n : '' + n;
-
-                const now = {
-                    h: pad(h), m: pad(m), s: pad(s)
-                };
-
-                Object.keys(els).forEach(t => {
-                    for (let i = 0; i < 2; i++) {
-                        const curr = now[t][i];
-                        let next = parseInt(curr) + 1;
-
-                        if (t === 'h') {
-                            if (i === 0) next = next <= 2 ? next : 0;
-                            if (i === 1) next = (now.h[0] === '2' && next > 3) ? 0 : (next > 9 ? 0 : next);
-                        } else {
-                            if (i === 0) next = next <= 5 ? next : 0;
-                            if (i === 1) next = next <= 9 ? next : 0;
-                        }
-
-                        const el = els[t][i];
-                        if (!el.digit) continue;
-
-                        if (!el.digit.dataset.digitBefore) {
-                            el.digit.dataset.digitBefore = curr;
-                            el.cardFaceA.textContent = curr;
-                            el.digit.dataset.digitAfter = next;
-                            el.cardFaceB.textContent = next;
-                        } else if (el.digit.dataset.digitBefore !== curr) {
-                            const card = el.card;
-                            card.addEventListener("transitionend", function handler() {
-                                card.removeEventListener("transitionend", handler);
-                                el.digit.dataset.digitBefore = curr;
-                                el.cardFaceA.textContent = curr;
-
-                                const newCard = card.cloneNode(true);
-                                newCard.classList.remove("flipped");
-                                el.digit.replaceChild(newCard, card);
-                                el.card = newCard;
-                                el.cardFaces = newCard.querySelectorAll(".card-face");
-                                el.cardFaceA = el.cardFaces[0];
-                                el.cardFaceB = el.cardFaces[1];
-
-                                el.digit.dataset.digitAfter = next;
-                                el.cardFaceB.textContent = next;
-                            }, { once: true });
-
-                            if (!card.classList.contains("flipped")) {
-                                card.classList.add("flipped");
-                            }
-                        }
-                    }
-                });
-
-                setTimeout(runClock, 1000);
-            }
-
-            runClock();
-        })();
-
-        // ==================== RANDOM QUOTES ====================
-        const quotes = [
-            { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
-            { text: "Time is the most valuable thing a man can spend.", author: "Theophrastus" },
-            { text: "Every moment is a fresh beginning.", author: "T.S. Eliot" },
-            { text: "The future belongs to those who believe in the beauty of their dreams.", author: "Eleanor Roosevelt" },
-            { text: "Stay hungry, stay foolish.", author: "Steve Jobs" },
-            { text: "Simplicity is the ultimate sophistication.", author: "Leonardo da Vinci" },
-            { text: "Everything you’ve ever wanted is sitting on the other side of fear.", author: "George Addair" },
-            { text: "The best time to plant a tree was 20 years ago. The second best time is now.", author: "Chinese Proverb" },
-            { text: "Do what you feel in your heart to be right, for you’ll be criticized anyway.", author: "Eleanor Roosevelt" },
-            { text: "Life is what happens when you’re busy making other plans.", author: "John Lennon" }
-        ];
-
-        function getRandomQuote() {
-            return quotes[Math.floor(Math.random() * quotes.length)];
+        function createFlipDigit() {
+            const el = document.createElement('div');
+            el.className = 'flip-digit';
+            el.innerHTML = `
+                <div class="flip-inner">
+                    <div class="flip-upper">8</div>
+                    <div class="flip-lower">8</div>
+                </div>
+            `;
+            return el;
         }
 
-        function showQuote() {
-            const quoteText = document.getElementById("quote-text");
-            const quoteAuthor = document.getElementById("quote-author");
+        function initDigits(containerId, count) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            for (let i = 0; i < count; i++) {
+                container.appendChild(createFlipDigit());
+            }
+        }
 
-            const q = getRandomQuote();
+        function updateDigit(digitEl, newVal) {
+            const upper = digitEl.querySelector('.flip-upper');
+            if (upper.textContent === newVal) return;
 
-            // Fade out
-            quoteText.classList.remove("show");
-            quoteAuthor.classList.remove("show");
+            digitEl.dataset.flipping = 'true';
 
             setTimeout(() => {
-                quoteText.textContent = `"${q.text}"`;
-                quoteAuthor.textContent = `— ${q.author}`;
-                // Fade in
-                quoteText.classList.add("show");
-                quoteAuthor.classList.add("show");
-            }, 800);
+                upper.textContent = newVal;
+                digitEl.querySelector('.flip-lower').textContent = newVal;
+                setTimeout(() => {
+                    digitEl.dataset.flipping = 'false';
+                }, 20);
+            }, 310);
         }
 
-        // Change quote every 12 seconds
-        showQuote();                    // Show first quote immediately
-        setInterval(showQuote, 12000);
+        function updateClock() {
+            const now = currentTimezone 
+                ? new Date(new Date().toLocaleString("en-US", { timeZone: currentTimezone }))
+                : new Date();
+
+            let hours = now.getHours();
+            const mins = now.getMinutes().toString().padStart(2, '0');
+            const secs = now.getSeconds().toString().padStart(2, '0');
+
+            const hourDisplay = is24Hour 
+                ? hours.toString().padStart(2, '0')
+                : ((hours % 12) || 12).toString().padStart(2, '0');
+
+            // Update hours
+            const hDigits = document.querySelectorAll('#hours .flip-digit');
+            updateDigit(hDigits[0], hourDisplay[0]);
+            updateDigit(hDigits[1], hourDisplay[1]);
+
+            // Minutes
+            const mDigits = document.querySelectorAll('#minutes .flip-digit');
+            updateDigit(mDigits[0], mins[0]);
+            updateDigit(mDigits[1], mins[1]);
+
+            // Seconds
+            const sDigits = document.querySelectorAll('#seconds .flip-digit');
+            updateDigit(sDigits[0], secs[0]);
+            updateDigit(sDigits[1], secs[1]);
+
+            // Date
+            const dateEl = document.getElementById('date');
+            const dateOptions = { weekday: 'long', month: 'long', day: 'numeric' };
+            dateEl.textContent = now.toLocaleDateString(undefined, dateOptions);
+        }
+
+        function populateTimezones() {
+            const select = document.getElementById('timezone-select');
+            const zones = [
+                "", "Asia/Tokyo", "Europe/London", "America/New_York", 
+                "America/Los_Angeles", "Australia/Sydney", "Europe/Paris",
+                "Asia/Dubai", "America/Chicago", "Pacific/Auckland"
+            ];
+            
+            zones.forEach(tz => {
+                const opt = document.createElement('option');
+                opt.value = tz;
+                opt.textContent = tz ? tz.replace(/_/g, ' ').split('/').pop() : 'Local Time';
+                select.appendChild(opt);
+            });
+        }
+
+        function renderAlarms() {
+            const container = document.getElementById('alarm-list');
+            container.innerHTML = '';
+            alarms.forEach((alarm, i) => {
+                const div = document.createElement('div');
+                div.className = 'alarm-item';
+                div.innerHTML = `
+                    <span style="font-size:1.35rem; font-weight:600;">${alarm.time}</span>
+                    <button onclick="deleteAlarm(${i})" style="background:none;border:none;color:#f87171;font-size:1.6rem;cursor:pointer;">×</button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        window.deleteAlarm = (index) => {
+            alarms.splice(index, 1);
+            renderAlarms();
+        };
+
+        function startClock() {
+            updateClock();
+            setInterval(updateClock, 1000);
+        }
+
+        function setupListeners() {
+            document.getElementById('format-toggle').addEventListener('click', () => {
+                is24Hour = !is24Hour;
+                document.getElementById('format-toggle').textContent = is24Hour ? '24H' : '12H';
+                updateClock();
+            });
+
+            document.getElementById('theme-toggle').addEventListener('click', () => {
+                currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', currentTheme);
+                document.getElementById('theme-toggle').textContent = currentTheme === 'dark' ? '🌙' : '☀️';
+            });
+
+            document.getElementById('timezone-select').addEventListener('change', (e) => {
+                currentTimezone = e.target.value;
+                updateClock();
+            });
+
+            document.getElementById('fullscreen-btn').addEventListener('click', () => {
+                if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+                else document.exitFullscreen();
+            });
+
+            const focusBtn = document.getElementById('focus-btn');
+            focusBtn.addEventListener('click', () => {
+                isFocusMode = !isFocusMode;
+                document.getElementById('app').classList.toggle('focus-mode', isFocusMode);
+                focusBtn.textContent = isFocusMode ? 'Exit Focus' : 'Focus';
+            });
+
+            // Alarm modal
+            const modal = document.getElementById('alarm-modal');
+            document.getElementById('add-alarm').addEventListener('click', () => modal.style.display = 'flex');
+            
+            document.getElementById('cancel-alarm').addEventListener('click', () => modal.style.display = 'none');
+            
+            document.getElementById('save-alarm').addEventListener('click', () => {
+                const timeVal = document.getElementById('alarm-time').value;
+                if (timeVal) {
+                    alarms.unshift({ time: timeVal });
+                    renderAlarms();
+                    modal.style.display = 'none';
+                }
+            });
+        }
+
+        function initialize() {
+            initDigits('hours', 2);
+            initDigits('minutes', 2);
+            initDigits('seconds', 2);
+
+            populateTimezones();
+            setupListeners();
+            startClock();
+
+            // Demo alarms
+            alarms = [{time: "07:45"}, {time: "18:30"}];
+            renderAlarms();
+
+            // System theme detection
+            if (window.matchMedia('(prefers-color-scheme: light)').matches) {
+                currentTheme = 'light';
+                document.documentElement.setAttribute('data-theme', 'light');
+                document.getElementById('theme-toggle').textContent = '☀️';
+            }
+        }
+
+        window.onload = initialize;
     </script>
 </body>
 </html>
